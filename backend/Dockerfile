@@ -2,6 +2,9 @@
 FROM azul/zulu-openjdk-alpine:17.0.14
 
 WORKDIR /app
+
+COPY .mvn/ .mvn
+COPY mvnw .
 COPY pom.xml ./
 COPY src ./src
 
