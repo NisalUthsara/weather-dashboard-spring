@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # Kafka in KRaft mode—no Zookeeper needed
+  kafka:
+    image: bitnami/kafka:latest
+    container_name: kafka
+    environment:
+      # Run both broker & controller in one process
+      KAFKA_CFG_PROCESS_ROLES: 'broker,controller'
+      # Unique ID for this node
+      KAFKA_CFG_NODE_ID: '1'
+      # Controller quorum voters format: <nodeId>@<host>:<controllerPort>
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      # Define listeners for client (9092) and controller (9093)
+      KAFKA_CFG_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093'
+      # What clients should use to reach Kafka
+      KAFKA_CFG_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
+      # Allow plaintext (no TLS) for simplicity
+      ALLOW_PLAINTEXT_LISTENER: 'yes'
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_DB: weatherdb
+      POSTGRES_USER: weather_user
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: weather-backend
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/weatherdb
+      SPRING_DATASOURCE_USERNAME: weather_user
+      SPRING_DATASOURCE_PASSWORD: secret
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      WEATHER_API_KEY: ${WEATHER_API_KEY}
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: weather-frontend
+    depends_on:
+      - backend
+    environment:
+      REACT_APP_API_URL: http://localhost:8080/api
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:

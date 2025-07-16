@@ -1,3 +1,7 @@
+# =========================================
+# Generic Java / IDE files
+# =========================================
+
 # Compiled class file
 *.class
 
@@ -10,7 +14,13 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Package Files #
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+replay_pid*
+
+# =========================================
+# Packaged Artifacts
+# =========================================
 *.jar
 *.war
 *.nar
@@ -19,6 +29,23 @@
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+# =========================================
+# Backend - Java/Maven
+# =========================================
+# Maven build output directory
+/backend/target/
+
+# =========================================
+# Frontend - Node.js/React
+# =========================================
+# Node.js dependencies
+/frontend/node_modules/
+
+# React build output
+/frontend/build/
+
+# =========================================
+# Infrastructure / Environment
+# =========================================
+# Environment variables file
+/infra/.env
