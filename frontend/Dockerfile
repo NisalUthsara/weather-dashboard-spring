@@ -7,5 +7,6 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
+EXPOSE 3000
 # In dev you might want `npm start`, but for production:
-CMD ["npx","serve","-s","build","-l","3000"]
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "3000"]
