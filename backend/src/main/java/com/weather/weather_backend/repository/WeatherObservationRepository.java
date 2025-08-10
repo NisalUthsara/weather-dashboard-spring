@@ -14,4 +14,8 @@ public interface WeatherObservationRepository extends JpaRepository<WeatherObser
             Instant from,
             Instant to
     );
+
+    //existence check used for idempotency
+    boolean existsByLocationIdAndObservedAt(Long locationId, Instant observedAt);
+
 }
