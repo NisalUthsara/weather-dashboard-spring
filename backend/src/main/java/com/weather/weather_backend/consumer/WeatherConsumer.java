@@ -17,9 +17,9 @@ import java.util.Optional;
 public class WeatherConsumer {
 
     private final WeatherObservationRepository weatherObservationRepository;
-    private LocationRepository locationRepo;
+    private final LocationRepository locationRepo;
 
-    @KafkaListener(topics = "weather.current", groupId = "weather-consumer")
+    @KafkaListener(topics = "weather.current", groupId = "weather-consumers")
     public void handle(WeatherEvent event){
         try {
             //find location entity (should exist)
@@ -45,7 +45,7 @@ public class WeatherConsumer {
                     .temperature(event.getTemperature())
                     .humidity(event.getHumidity())
                     .windSpeed(event.getWindSpeed())
-                    .pressure(null)
+                    .pressure(11.11)
                     .conditionText(event.getCondition())
                     .build();
 
