@@ -1,6 +1,7 @@
 package com.weather.weather_backend.controller;
 
 import com.weather.weather_backend.dto.LocationDto;
+import com.weather.weather_backend.dto.WeatherObservationDto;
 import com.weather.weather_backend.service.LocationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +21,14 @@ public class LocationController {
 
    private final LocationService locationService;
 
-   @GetMapping
-   public ResponseEntity<List<LocationDto>> fetchAll(){
-       List<LocationDto> dtos = locationService.getAllLocations();
-       return ResponseEntity.ok(dtos);
-   }
+//   @GetMapping
+//   public ResponseEntity<List<LocationDto>> fetchAll(){
+//       List<LocationDto> dtos = locationService.getAllLocations();
+//       return ResponseEntity.ok(dtos);
+//   }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<List<WeatherObservationDto>> getSelectedLocationData(){
+
+    }
 }

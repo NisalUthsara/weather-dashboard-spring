@@ -24,7 +24,7 @@ public class WeatherPublisher {
     @Value("${WEATHER_API_KEY}")
     private String apiKey;
 
-    @Scheduled(fixedRateString = "${weather.poll.rate:10000}")
+    @Scheduled(fixedRateString = "${weather.poll.rate:50000}")
     public void publish(){
         List<Location> locations = locationRepository.findAll();
         locations.forEach(this::fetchAndSend);

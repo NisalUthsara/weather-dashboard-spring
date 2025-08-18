@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface WeatherObservationRepository extends JpaRepository<WeatherObservation, Long> {
@@ -18,4 +19,5 @@ public interface WeatherObservationRepository extends JpaRepository<WeatherObser
     //existence check used for idempotency
     boolean existsByLocationIdAndObservedAt(Long locationId, Instant observedAt);
 
+    Optional<WeatherObservation> findTopByLocationInOrderByObservedAtDesc(Long locationId);
 }
