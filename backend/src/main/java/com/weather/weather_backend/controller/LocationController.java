@@ -15,20 +15,16 @@ import java.util.List;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/api/locations")
+@RequestMapping("/api/location")
 @RequiredArgsConstructor
 public class LocationController {
 
    private final LocationService locationService;
 
-//   @GetMapping
-//   public ResponseEntity<List<LocationDto>> fetchAll(){
-//       List<LocationDto> dtos = locationService.getAllLocations();
-//       return ResponseEntity.ok(dtos);
-//   }
+   @GetMapping
+   public ResponseEntity<List<LocationDto>> fetchAll(){
+       List<LocationDto> dtos = locationService.getAllLocations();
+       return ResponseEntity.ok(dtos);
+   }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<List<WeatherObservationDto>> getSelectedLocationData(){
-
-    }
 }
