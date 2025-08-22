@@ -20,7 +20,7 @@ public class ObservationService {
      * Returns the latest observation for the location as DTO if present.
      */
     public Optional<ObservationDto> getLatestObservation (Long locationId) {
-        Optional<WeatherObservation> opt = observationRepository.findTopByLocationInOrderByObservedAtDesc(locationId);
+        Optional<WeatherObservation> opt = observationRepository.findTopByLocationIdOrderByObservedAtDesc(locationId);
         return opt.map(this::toDto);
     }
 
