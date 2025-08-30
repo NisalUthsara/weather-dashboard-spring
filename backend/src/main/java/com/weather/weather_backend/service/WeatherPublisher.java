@@ -1,9 +1,13 @@
 package com.weather.weather_backend.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.weather.weather_backend.dto.WeatherEvent;
 import com.weather.weather_backend.model.Location;
 import com.weather.weather_backend.repository.LocationRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,18 +20,30 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class WeatherPublisher {
+    private static final Logger log = LoggerFactory.getLogger(WeatherPublisher.class);
 
     private final WebClient openWeatherClient;
     private final LocationRepository locationRepository;
-    private final KafkaTemplate<String, WeatherEvent> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+
+    private final ObjectMapper objectMapper;
 
     @Value("${WEATHER_API_KEY}")
     private String apiKey;
 
-    @Scheduled(fixedRateString = "${weather.poll.rate:50000}")
+    @Scheduled(fixedRateString = "${weather.poll.rate:60000}")
     public void publish(){
-        List<Location> locations = locationRepository.findAll();
-        locations.forEach(this::fetchAndSend);
+        try {
+            List<Location> locations = locationRepository.findAll();
+            if (locations.isEmpty()){
+                log.debug("No locations found to poll.");
+                return;
+            }
+            log.debug("Polling {} locations for current weather...", locations.size());
+            locations.forEach(this::fetchAndSend);
+        }catch (Exception e){
+            log.error("Unexpected error in publishAllLocations", e);
+        }
     }
 
     private void fetchAndSend(Location location) {
@@ -46,26 +62,38 @@ public class WeatherPublisher {
                     .block();   // blocking call - simple and easy to reason about
 
             if (resp == null) {
-                System.err.println("OpenWeather returned null for " + location.getCityName());
+                log.warn("OpenWeather returned null for {} (id={})",
+                        location.getCityName(), location.getId());
                 return;
             }
+
+            //null safe extraction
+            Double temp = resp.main() != null ? resp.main().temp() : null;
+            Double humidity = resp.main() != null ? resp.main().humidity() : null;
+            Double windSpeed = resp.wind() != null ? resp.wind().speed() : null;
+            String condition = (resp.weather() != null && !resp.weather().isEmpty())
+                    ? resp.weather().get(0).description()
+                    : "unknown";
 
             WeatherEvent event = WeatherEvent.builder()
                     .locationId(location.getId())
                     .timestamp(Instant.ofEpochSecond(resp.dt()))
-                    .temperature(resp.main.temp())
-                    .humidity(resp.main().humidity())
-                    .windSpeed(resp.wind().speed())
-                    .condition(resp.weather().get(0).description())
+                    .temperature(temp)
+                    .humidity(humidity)
+                    .windSpeed(windSpeed)
+                    .condition(condition)
                     .build();
 
-            kafkaTemplate.send("weather.current", event);
-            System.out.println("Published event for " + location.getCityName() + " -> " + event);
+            //Serialize to JSON string
+            String json = objectMapper.writeValueAsString(event);
+
+            kafkaTemplate.send("weather.current", String.valueOf(location.getId()), json);
+
+            log.info("Published event for {} -> {}", location.getCityName(), event);
 
         } catch (Exception e) {
-            // Do not let one failure stop the entire scheduler
-            System.err.println("Error fetching weather for " + location.getCityName() + ": " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error fetching weather for {} (id={}): {}",
+                    location.getCityName(), location.getId(), e.getMessage(), e);
         }
     }
 

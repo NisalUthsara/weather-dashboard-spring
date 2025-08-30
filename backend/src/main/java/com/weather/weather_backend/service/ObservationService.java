@@ -32,6 +32,7 @@ public class ObservationService {
                 .observedAt(entity.getObservedAt())
                 .temperature(entity.getTemperature())
                 .humidity(entity.getHumidity())
+                .windSpeed(entity.getWindSpeed())
                 .pressure(entity.getPressure())
                 .conditionText(entity.getConditionText())
                 .ageSeconds(ageSeconds)
